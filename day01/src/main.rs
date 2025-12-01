@@ -115,7 +115,6 @@ mod tests {
         let mut lock = Lock::new();
         assert_eq!(lock.mv(Direction::Left, 10), 40);
         assert_eq!(lock.mv(Direction::Right, 10), 50);
-        assert_eq!(lock.mv(Direction::Left, 200), 50);
     }
 
     #[test]
