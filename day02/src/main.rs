@@ -71,14 +71,7 @@ impl IdRange {
                 .take(divisor as usize)
                 .multi_cartesian_product()
                 .filter_map(|elem| {
-                    let s = String::from_utf8_lossy(
-                        elem.iter()
-                            .map(|e| *e as u8)
-                            .collect::<Vec<u8>>()
-                            .as_slice(),
-                    )
-                    .to_string();
-
+                    let s = String::from_iter(elem);
                     (!s.starts_with("0")).then_some(s)
                 })
                 // .map(|elem| elem.repeat(ord_to + 1 / divisor as usize))
