@@ -63,6 +63,7 @@ mod test {
     }
 
     #[test]
+    #[ignore]
     fn part_two_solution() -> Result<()> {
         Err(eyre!("no solution yet"))
     }
