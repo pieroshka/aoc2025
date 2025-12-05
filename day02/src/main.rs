@@ -103,34 +103,7 @@ impl IdRange {
     }
 }
 
-fn main() -> Result<()> {
-    let input = include_str!("input.txt");
-
-    let res = input
-        .split(',')
-        .map(|range| IdRange::try_from(range.to_string()))
-        .collect::<Result<Vec<IdRange>>>()?
-        .iter()
-        .flat_map(|range| range.get_invalid_ids_part1())
-        .map(|elem| elem as i64)
-        .sum::<i64>();
-
-    println!("part1: {:#?}", res);
-
-    let res = input
-        .split(',')
-        .map(|range| IdRange::try_from(range.to_string()))
-        .collect::<Result<Vec<IdRange>>>()?
-        .iter()
-        // .inspect(|e| println!("{:?}", e))
-        .flat_map(|range| range.get_invalid_ids_part2())
-        .unique()
-        .sum::<i64>();
-
-    println!("part2: {:#?}", res);
-
-    Ok(())
-}
+fn main() {}
 
 #[cfg(test)]
 mod tests {
@@ -171,6 +144,47 @@ mod tests {
             .sum::<i64>();
 
         assert_eq!(res, 4174379265);
+        Ok(())
+    }
+}
+
+#[cfg(test)]
+mod test {
+    use super::*;
+
+    #[test]
+    fn part_one_solution() -> Result<()> {
+        let input = include_str!("input.txt");
+
+        let res = input
+            .split(',')
+            .map(|range| IdRange::try_from(range.to_string()))
+            .collect::<Result<Vec<IdRange>>>()?
+            .iter()
+            .flat_map(|range| range.get_invalid_ids_part1())
+            .map(|elem| elem as i64)
+            .sum::<i64>();
+
+        assert_eq!(res, 34826702005);
+        Ok(())
+    }
+
+    #[test]
+    fn part_two_solution() -> Result<()> {
+        let input = include_str!("input.txt");
+
+        let res = input
+            .split(',')
+            .map(|range| IdRange::try_from(range.to_string()))
+            .collect::<Result<Vec<IdRange>>>()?
+            .iter()
+            // .inspect(|e| println!("{:?}", e))
+            .flat_map(|range| range.get_invalid_ids_part2())
+            .unique()
+            .sum::<i64>();
+
+        assert_eq!(res, 43287141963);
+
         Ok(())
     }
 }

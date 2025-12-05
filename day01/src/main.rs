@@ -65,46 +65,7 @@ impl Lock {
     }
 }
 
-fn main() -> Result<()> {
-    let mut l = Lock::new();
-
-    let input = include_str!("input.txt");
-    let res: i32 = input
-        .lines()
-        .map(|line| {
-            let (dir_str, num_str) = line.split_at(1);
-
-            let dir = Direction::try_from(dir_str).unwrap();
-            let value = num_str.parse::<i32>().unwrap();
-
-            (dir, value)
-        })
-        .map(|(dir, value)| l.mv(dir, value))
-        .filter(|elem| *elem == 0)
-        .count() as i32;
-
-    println!("res p1: {}", res);
-
-    let mut l = Lock::new();
-
-    let input = include_str!("input.txt");
-    let res: i32 = input
-        .lines()
-        .map(|line| {
-            let (dir_str, num_str) = line.split_at(1);
-
-            let dir = Direction::try_from(dir_str).unwrap();
-            let value = num_str.parse::<i32>().unwrap();
-
-            (dir, value)
-        })
-        .map(|(dir, value)| l.mv_counting(dir, value))
-        .sum();
-
-    println!("res p2: {}", res);
-
-    Ok(())
-}
+fn main() {}
 
 #[cfg(test)]
 mod tests {
@@ -158,5 +119,53 @@ mod tests {
             .sum();
 
         assert_eq!(res, 6);
+    }
+}
+
+#[cfg(test)]
+mod test {
+    use super::*;
+
+    #[test]
+    fn part_one_solution() {
+        let mut l = Lock::new();
+
+        let input = include_str!("input.txt");
+        let res: i32 = input
+            .lines()
+            .map(|line| {
+                let (dir_str, num_str) = line.split_at(1);
+
+                let dir = Direction::try_from(dir_str).unwrap();
+                let value = num_str.parse::<i32>().unwrap();
+
+                (dir, value)
+            })
+            .map(|(dir, value)| l.mv(dir, value))
+            .filter(|elem| *elem == 0)
+            .count() as i32;
+
+        assert_eq!(res, 1036)
+    }
+
+    #[test]
+    fn part_two_solution() {
+        let mut l = Lock::new();
+
+        let input = include_str!("input.txt");
+        let res: i32 = input
+            .lines()
+            .map(|line| {
+                let (dir_str, num_str) = line.split_at(1);
+
+                let dir = Direction::try_from(dir_str).unwrap();
+                let value = num_str.parse::<i32>().unwrap();
+
+                (dir, value)
+            })
+            .map(|(dir, value)| l.mv_counting(dir, value))
+            .sum();
+
+        assert_eq!(res, 6228)
     }
 }

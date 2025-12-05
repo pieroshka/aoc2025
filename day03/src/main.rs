@@ -45,11 +45,12 @@ impl BatteryBank {
 fn main() {}
 
 #[cfg(test)]
-mod tests {
+mod test {
     use super::*;
+    use eyre::eyre;
 
     #[test]
-    fn part_one() {
+    fn part_one_solution() -> Result<()> {
         let res: u32 = include_str!("input.txt")
             .lines()
             .map(|line| BatteryBank::from(line))
@@ -57,6 +58,12 @@ mod tests {
             .inspect(|elem| println!("{:?}", elem))
             .sum::<u32>();
 
-        assert_eq!(res, 17244)
+        assert_eq!(res, 17244);
+        Ok(())
+    }
+
+    #[test]
+    fn part_two_solution() -> Result<()> {
+        Err(eyre!("no solution yet"))
     }
 }
