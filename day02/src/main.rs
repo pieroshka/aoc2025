@@ -1,4 +1,3 @@
-use std::num::ParseIntError;
 
 use eyre::{Result, eyre};
 use itertools::Itertools;
@@ -42,7 +41,6 @@ impl IdRange {
 
         (self.from / i64::pow(10, ((ord_from / 2) + 1) as u32)
             ..=(self.to / i64::pow(10, ((ord_to / 2) + (ord_to % 2)) as u32)))
-            .into_iter()
             .filter_map(|elem| {
                 let invalid_id = Self::invalid_id_from_half(elem);
 

@@ -86,7 +86,7 @@ struct Database {
 
 impl Database {
     fn from_input(value: &str) -> Result<Self> {
-        let mut lines_iter = value.lines().into_iter();
+        let mut lines_iter = value.lines();
         let ranges = lines_iter
             .by_ref()
             .map_while(|line| Range::from_line(line).ok())
@@ -97,7 +97,7 @@ impl Database {
 
         Ok(Self {
             fresh_ranges: ranges,
-            ids: ids,
+            ids,
         })
     }
 

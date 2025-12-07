@@ -29,7 +29,7 @@ impl Room {
     {
         let grid = iter
             .into_iter()
-            .map(|line| line.chars().map(|c| Item::try_from(c)).collect())
+            .map(|line| line.chars().map(Item::try_from).collect())
             .collect::<Result<Vec<_>, _>>()?;
 
         Ok(Self { grid })
@@ -51,7 +51,7 @@ impl Room {
                     continue;
                 }
 
-                let item = self.grid[i][j].clone();
+                let item = self.grid[i][j];
                 out.push(item);
             }
         }

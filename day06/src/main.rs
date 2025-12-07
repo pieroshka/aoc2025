@@ -1,12 +1,11 @@
 use std::{
-    any,
     error::Error,
     ops::{Add, Mul},
     str::FromStr,
 };
 
 use eyre::{Result, eyre};
-use itertools::{Groups, Itertools};
+use itertools::Itertools;
 
 #[derive(Debug, Clone, Copy, PartialEq)]
 enum Op {
@@ -94,7 +93,7 @@ where
             })
             .collect::<Result<Vec<MathTask<T>>>>()?;
 
-        Ok(Self { tasks: tasks })
+        Ok(Self { tasks })
     }
 
     fn from_input_part_two(input: &str) -> Result<Self>
@@ -139,16 +138,16 @@ where
             size: i32,
         }
 
-        let mut ops_with_size = vec![];
+        let mut ops_with_size: Vec<OpWithSize> = vec![];
 
         for op_or_space in ops_lines_parsed {
             match op_or_space {
                 OpOrSpace::Op(op) => {
-                    ops_with_size
-                        .last_mut()
-                        .map(|op_with_size: &mut OpWithSize| op_with_size.size -= 1);
+                    if let Some(op_with_size) = ops_with_size.last_mut() {
+                        op_with_size.size -= 1;
+                    }
 
-                    ops_with_size.push(OpWithSize { op: op, size: 1 })
+                    ops_with_size.push(OpWithSize { op, size: 1 })
                 }
                 OpOrSpace::Space => {
                     ops_with_size
@@ -162,7 +161,7 @@ where
         let nums_lines = rotate_left(
             lines
                 .iter()
-                .map(|line| line.chars().into_iter().collect_vec())
+                .map(|line| line.chars().collect_vec())
                 .collect_vec(),
         );
 
@@ -187,7 +186,7 @@ where
             idx += op_with_size.size + 1;
 
             math_tasks.push(MathTask {
-                numbers: numbers,
+                numbers,
                 op: op_with_size.op,
             });
         }
@@ -255,7 +254,6 @@ mod test {
         Ok(())
     }
 
-    #[ignore]
     #[test]
     fn part_two_solution() -> Result<()> {
         let hw = Homework::<i64>::from_input_part_two(include_str!("input.txt"))?;
