@@ -1,12 +1,14 @@
 use std::{
+    any,
     error::Error,
     ops::{Add, Mul},
     str::FromStr,
 };
 
 use eyre::{Result, eyre};
+use itertools::{Groups, Itertools};
 
-#[derive(Debug, Clone, Copy)]
+#[derive(Debug, Clone, Copy, PartialEq)]
 enum Op {
     Add,
     Mul,
@@ -95,48 +97,102 @@ where
         Ok(Self { tasks: tasks })
     }
 
-    fn from_input_part_two(input: &str) -> Result<Self> {
-        let mut lines: Vec<&str> = input
-            .lines()
-            .map(|l| l.trim())
-            .filter(|l| !l.is_empty())
-            .collect();
+    fn from_input_part_two(input: &str) -> Result<Self>
+    where
+        T: std::fmt::Debug,
+    {
+        let mut lines: Vec<&str> = input.lines().filter(|l| !l.is_empty()).collect();
 
         let ops_line = lines
             .pop()
             .ok_or(eyre!("need at least one line in input"))?;
 
-        let nums = lines
-            .into_iter()
-            .map(|l| l.split_whitespace().map(|x| Ok(x.parse::<T>()?)).collect())
-            .collect::<Result<Vec<Vec<T>>>>()?;
+        #[derive(Debug)]
+        enum OpOrSpace {
+            Op(Op),
+            Space,
+        }
 
-        let ops = ops_line
-            .split_whitespace()
-            .map(|tok| {
-                Op::try_from(
-                    tok.chars()
-                        .next()
-                        .ok_or(eyre!("need at least one char to parse an operator"))?,
-                )
-            })
-            .collect::<Result<Vec<Op>>>()?;
+        impl TryFrom<char> for OpOrSpace {
+            type Error = eyre::ErrReport;
 
-        let tasks = transpose(nums)
-            .iter()
-            .enumerate()
-            .map(|(idx, line)| {
-                Ok(MathTask {
-                    numbers: line.to_vec(),
-                    op: *ops.get(idx).ok_or(eyre::format_err!(
-                        "index {} out of bounds for ops vector",
-                        idx
-                    ))?,
-                })
-            })
-            .collect::<Result<Vec<MathTask<T>>>>()?;
+            fn try_from(value: char) -> Result<Self> {
+                if let Ok(op) = Op::try_from(value) {
+                    return Ok(Self::Op(op));
+                }
 
-        Ok(Self { tasks: tasks })
+                match value {
+                    ' ' => Ok(Self::Space),
+                    _ => Err(eyre::format_err!("unsupported char {}", value)),
+                }
+            }
+        }
+
+        let ops_lines_parsed = ops_line
+            .chars()
+            .map(OpOrSpace::try_from)
+            .collect::<Result<Vec<_>>>()?;
+
+        #[derive(Debug)]
+        struct OpWithSize {
+            op: Op,
+            size: i32,
+        }
+
+        let mut ops_with_size = vec![];
+
+        for op_or_space in ops_lines_parsed {
+            match op_or_space {
+                OpOrSpace::Op(op) => {
+                    ops_with_size
+                        .last_mut()
+                        .map(|op_with_size: &mut OpWithSize| op_with_size.size -= 1);
+
+                    ops_with_size.push(OpWithSize { op: op, size: 1 })
+                }
+                OpOrSpace::Space => {
+                    ops_with_size
+                        .last_mut()
+                        .ok_or(eyre!("operations line expected to begin with an operator"))?
+                        .size += 1
+                }
+            }
+        }
+
+        let nums_lines = rotate_left(
+            lines
+                .iter()
+                .map(|line| line.chars().into_iter().collect_vec())
+                .collect_vec(),
+        );
+
+        let mut idx = 0;
+        let mut math_tasks = vec![];
+
+        for op_with_size in ops_with_size.iter().rev() {
+            let mut numbers = vec![];
+
+            for i in idx..(idx + op_with_size.size) {
+                numbers.push(
+                    String::from_iter(
+                        nums_lines
+                            .get(i as usize)
+                            .ok_or(eyre::format_err!("index {} out of range", i))?,
+                    )
+                    .trim()
+                    .parse::<T>()?,
+                );
+            }
+
+            idx += op_with_size.size + 1;
+
+            math_tasks.push(MathTask {
+                numbers: numbers,
+                op: op_with_size.op,
+            });
+        }
+
+        Ok(Self { tasks: math_tasks })
     }
 }
 
@@ -157,13 +213,19 @@ fn transpose<T>(v: Vec<Vec<T>>) -> Vec<Vec<T>> {
         .collect()
 }
 
-fn main() -> Result<()> {
-    let hw = Homework::<i32>::from_input_part_two(include_str!("testinput.txt"))?;
-    let res = hw.tasks.iter().map(|task| task.solve()).sum::<i32>();
-    println!("{:#?} == 3263827 -> {}", res, res == 3263827);
+fn rotate_left<T: Copy + std::fmt::Debug>(v: Vec<Vec<T>>) -> Vec<Vec<T>> {
+    if v.is_empty() {
+        return v;
+    }
 
-    Ok(())
+    transpose(
+        v.iter()
+            .map(|line| line.iter().rev().copied().collect())
+            .collect(),
+    )
 }
+
+fn main() {}
 
 #[cfg(test)]
 mod test {
@@ -185,7 +247,6 @@ mod test {
         Ok(())
     }
 
-    #[ignore]
     #[test]
     fn part_two_example() -> Result<()> {
         let hw = Homework::<i32>::from_input_part_two(include_str!("testinput.txt"))?;
@@ -199,7 +260,7 @@ mod test {
     fn part_two_solution() -> Result<()> {
         let hw = Homework::<i64>::from_input_part_two(include_str!("input.txt"))?;
         let res = hw.tasks.iter().map(|task| task.solve()).sum::<i64>();
-        assert_eq!(res, -1);
+        assert_eq!(res, 9695042567249);
         Ok(())
     }
 }
